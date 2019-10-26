@@ -1,21 +1,50 @@
+//Gradle 插件
+//用来执行 lintCheck
 apply plugin: 'groovy'
+apply plugin: 'maven'
+apply from:'../dependencies.gradle'
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.android.tools.lint:lint-api:26.3.2'
-    implementation 'com.android.tools.lint:lint-checks:26.3.2'
-    implementation 'com.android.tools.lint:lint:26.3.2'
-
-    /*implementation 'com.android.tools.build:gradle:3.3.2'
-    implementation 'com.android.tools.build:gradle-api:3.3.2'*/
-    //implementation 'com.android.tools.build:gradle-core:3.3.2'
-
+    implementation "com.android.tools.lint:lint-api:${lintApiVersion}"
+    implementation "com.android.tools.lint:lint-checks:${lintCheckVersion}"
+    implementation "com.android.tools.lint:lint:${lintGradleVersion}"
     implementation gradleApi()
     implementation localGroovy()
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //这里使用了 buildSrc/libs/lintRules.jar ，也可以将 lintRules 发布到仓库中进行依赖
+
 }
+sourceCompatibility = "7"
+targetCompatibility = "7"
 
 repositories {
     google()
     jcenter()
+    maven { url nexusUrl }
 }
+uploadArchives {
+    repositories{
+        mavenDeployer{
+            repository(url: nexusUrl){
+                authentication(userName: nexusUsername, password: nexusPassword)
+            }
+            pom.groupId = rootProject.ext.groupId
+            pom.artifactId = rootProject.ext.lintPluginName
+            pom.version = rootProject.ext.lintPluginVersion
+        }
+    }
+
+}
+/**
+ * lintCheck 需要有 kotlin-compiler
+ * run 不需要 kotlin-compiler
+ */
+configurations {
+    boolean isLintCheck = project.hasProperty("isLintCheck")
+    if (!isLintCheck) {
+        all*.exclude group: 'com.android.tools.external.com-intellij',module:"kotlin-compiler"
+    }
+}
+

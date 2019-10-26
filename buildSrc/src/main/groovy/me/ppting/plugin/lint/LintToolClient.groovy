@@ -1,4 +1,4 @@
-package com.ls.lintplugin
+package me.ppting.plugin.lint
 
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.Warning
