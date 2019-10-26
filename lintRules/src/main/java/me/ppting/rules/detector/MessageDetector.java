@@ -1,4 +1,4 @@
-package com.ls.lintlib.detector;
+package me.ppting.rules.detector;
 
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Detector;

@@ -1,0 +1,56 @@
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly "com.android.tools.lint:lint-api:${lintApiVersion}"
+    compileOnly "com.android.tools.lint:lint-checks:${lintCheckVersion}"
+    compileOnly "com.android.tools.lint:lint-gradle:${lintGradleVersion}"
+
+}
+//添加如下代码
+jar {
+    manifest {
+        attributes 'Lint-Registry': 'me.ppting.rules.LintIssueRegistry'
+    }
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+configurations {
+    lintChecks
+}
+
+dependencies {
+    lintChecks files(jar)
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+/**
+ * 复制 aar 到 app module 中，只是用于实时更新 Android Studio 中的 Lint 提示
+ * 1. 需要编译 lintRules 中的 jar 到
+ */
+task copyLintRulesToBuildSrc(type: Copy){
+    from('build/libs')
+    into('../buildSrc/libs')
+    include(project.name + '.jar')
+    println("复制 lint rules jar 到 buildSrc/libs 中")
+}
+copyLintRulesToBuildSrc.dependsOn{ assemble }
+
+uploadArchives {
+    repositories{
+        mavenDeployer{
+            repository(url: nexusUrl){
+                authentication(userName: nexusUsername, password: nexusPassword)
+            }
+            pom.groupId = rootProject.ext.groupId
+            pom.artifactId = rootProject.ext.lintRulesName
+            pom.version = rootProject.ext.lintRulesVersion
+        }
+    }
+}

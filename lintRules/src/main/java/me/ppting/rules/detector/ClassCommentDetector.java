@@ -1,4 +1,4 @@
-package com.ls.lintlib.detector;
+package me.ppting.rules.detector;
 
 
 import com.android.tools.lint.client.api.UElementHandler;
@@ -63,12 +63,12 @@ public class ClassCommentDetector extends Detector implements Detector.UastScann
     @Nullable
     @Override
     public List<Class<? extends UElement>> getApplicableUastTypes() {
-        return Collections.singletonList(UClass.class);
+        return Collections.<Class<? extends UElement>>singletonList(UClass.class);
     }
 
     @Nullable
     @Override
-    public UElementHandler createUastHandler(@NotNull JavaContext context) {
+    public UElementHandler createUastHandler(@NotNull final JavaContext context) {
         return new UElementHandler(){
             @Override
             public void visitClass(@NotNull UClass node) {
