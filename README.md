@@ -70,13 +70,11 @@ eg
 **方法二**
 
 将 `lintRules` 发布到仓库中，再通过远程依赖在每个 module 中进行依赖
-即 `implementation 'com.aipai.plugin:lintPreview:1.0.0.beta'`
+即 `implementation 'me.ppting.plugin:lintPreview:1.0.0.beta'`
 
 ##### 效果
-> 目前只自定义了三个规则
+> 目前只自定义了几个规则，例如
 * 类名和方法名的命名需要符合驼峰命名法
-* Java 和 Kotlin 类方法中不允许出现中文硬编码
-* 赋值语句的 「=」前后需要有空格
 
 效果如下 ![Lint 检测后的展示效果](https://raw.githubusercontent.com/PPTing/AwesomeLint/master/images/Xnip2019-09-16_16-00-10.png)
 
