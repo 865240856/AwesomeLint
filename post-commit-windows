@@ -1,4 +1,4 @@
-#!/bin/sh
+#!D:/Git/bin/sh.exe
 CURDIR=$(cd $(dirname ${BASH_SOURCE[0]});  cd ../../; pwd )
 echo $CURDIR
 echo "正在进行 lint 代码检测"
