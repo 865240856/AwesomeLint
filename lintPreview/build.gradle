@@ -1,0 +1,82 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+configurations {
+    lintChecks
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //设置lint依赖 -> lint.jar
+    lintChecks project(configuration: "lintChecks", path: ':lintRules')
+}
+
+/**
+ * lintAAR 依赖于 lintRules
+ * 在修改 lintRules 规则后，需要增加先执行该任务，将新的 lint.jar 复制到 plugin(即 buildSrc) 中，在进行 upload 到仓库
+ * sync 后插件就会应用到各个 module 中
+ * 即可使用 **gradle lintCheck** 命令进行自定义 lint 检查
+ */
+task copyLintJar(type: Copy) {
+    from (configurations.lintChecks) {
+        rename {
+            String filename ->
+                "lint.jar"
+        }
+    }
+    into "$buildDir/intermediates/lint/"
+}
+
+project.afterEvaluate {
+    def compileLintTask = project.tasks.find {
+        //println("task name:$it.name")
+        it.name == "prepareLintJar"
+    }
+    compileLintTask.dependsOn(copyLintJar)
+}
+
+/**
+ * 复制 aar 到 app module 中，只是用于实时更新 Android Studio 中的 Lint 提示
+ * 1. 需要编译 lintRules 中的 jar 到
+ */
+task copyAAR(type: Copy){
+    from('build/outputs/aar')
+    into('../app/libs')
+    include(project.name + '.aar')
+    println("复制 aar 到 app/libs 中")
+}
+copyAAR.dependsOn{ assemble }
+
+
+uploadArchives {
+    repositories{
+        mavenDeployer{
+            repository(url: nexusUrl){
+                authentication(userName: nexusUsername, password: nexusPassword)
+            }
+            pom.groupId = rootProject.ext.groupId
+            pom.artifactId = rootProject.ext.lintPreviewPluginName
+            pom.version = rootProject.ext.lintPreviewPluginVersion
+        }
+    }
+
+}
