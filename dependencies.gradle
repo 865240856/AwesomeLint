@@ -1,0 +1,24 @@
+//本文件包含
+// 1. 需要发布的依赖名字和版本号
+// 2. 本仓库需要的代码依赖和版本号等
+
+
+ext{
+    //本项目的 groupId
+    groupId = "me.ppting.plugin"
+    //1. 提供 Android Studio 实时预览的 aar 文件
+    lintPreviewPluginName = "lintPreview"
+    lintPreviewPluginVersion = "1.0.0.beta"
+    //2. 自定义的 Lint Rules(Lint 规则)
+    lintRulesName = "lintRules"
+    lintRulesVersion = "1.0.0.beta"
+
+    //3. Gradle Plugin 插件的信息
+    lintPluginName = "lint"
+    lintPluginVersion = "1.0.0.beta"
+
+    //3. 项目本身的依赖
+    lintApiVersion = "26.3.2"
+    lintCheckVersion = "26.3.2"
+    lintGradleVersion = "26.3.2"
+}
