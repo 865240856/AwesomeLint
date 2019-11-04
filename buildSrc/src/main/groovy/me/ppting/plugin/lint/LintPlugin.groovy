@@ -39,6 +39,7 @@ class LintPlugin implements Plugin<Project> {
                     for (String s : list) {
                         println("file path: " + s)
                         if (isMatchFile(filenamePostfix, s)) {
+                            println("文件需要检查 "+s)
                             file = new File(s)
                             files.add(file)
                             getFileChangeStatus(s, project, startIndex, endIndex)
@@ -99,8 +100,10 @@ class LintPlugin implements Plugin<Project> {
 
                     //根据报告中存在的问题进行判断是否需要回退
                     if (txtReporter.issueNumber > 0) {
-                        //回退commit
-                        "git reset HEAD~1".execute(null, project.getRootDir())
+                        println("代码检测不通过，请检查后再次提交")
+                        throw RuntimeException("代码检测不通过，请检查后再次提交")
+                    }else{
+                        println("代码检测通过")
                     }
 
                     println("============ Lint check end ===============")
@@ -119,16 +122,16 @@ class LintPlugin implements Plugin<Project> {
             File postCommit
             String OSType = System.getProperty("os.name")
             if (OSType.contains("Windows")) {
-                postCommit = new File(project.rootDir, "post-commit-windows")
+                postCommit = new File(project.rootDir, "pre-commit-windows")
             } else {
-                postCommit = new File(project.rootDir, "post-commit")
+                postCommit = new File(project.rootDir, "pre-commit")
             }
 
             project.copy {
                 from (postCommit) {
                     rename {
                         String filename ->
-                            "post-commit"
+                            "pre-commit"
                     }
                 }
                 into new File(project.rootDir, ".git/hooks/")
@@ -136,8 +139,8 @@ class LintPlugin implements Plugin<Project> {
         }
 
         project.task("deleteGitHooks").doLast {
-            File hookFile = new File(project.rootDir, "/.git/hooks/post-commit")
-            println("删除 .git/hooks/post-commit 文件")
+            File hookFile = new File(project.rootDir, "/.git/hooks/pre-commit")
+            println("删除 .git/hooks/pre-commit 文件")
             hookFile.delete()
         }
     }
@@ -152,7 +155,9 @@ class LintPlugin implements Plugin<Project> {
         ArrayList<String> filterList = new ArrayList<>()
         try {
             //此命令获取本次提交的文件 在git commit之后执行
-            String command = "git diff --name-only --diff-filter=ACMRTUXB HEAD~1 HEAD~0"
+            //获取提交到暂存区的文件，在 git commit 之前执行
+            //添加 (A), 赋值 (C), 删除 (D), 修改 (M), 重命名 (R)
+            String command = "git diff --name-only --diff-filter=ACMRTUXB --cached"
             String changeInfo = command.execute(null, project.getRootDir()).text.trim()
             println("changeInfo is "+changeInfo)
             if (changeInfo == null || changeInfo.empty) {
@@ -177,7 +182,7 @@ class LintPlugin implements Plugin<Project> {
      */
     void getFileChangeStatus(String filePath, Project project, List<Integer> startIndex, List<Integer> endIndex) {
         try {
-            String command = "git diff --unified=0 --ignore-blank-lines --ignore-all-space HEAD~1 HEAD " + filePath
+            String command = "git diff --unified=0 --ignore-blank-lines --ignore-all-space --cached " + filePath
             String changeInfo = command.execute(null, project.getRootDir()).text.trim()
             String[] changeLogs = changeInfo.split("@@")
             String[] indexArray
