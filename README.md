@@ -13,14 +13,14 @@ Github 开源地址：https://github.com/PPTing/AwesomeLint
 2.1 在根目录下执行执行  
 Windows:
 
-  2.1.1 修改 `post-commit-windows` 文件中的第一行代码中的`D:/Git`为自己本机电脑的 `Git` 安装目录，即第一行代码为声明 `sh.exe` 的目录
+  2.1.1 修改 `pre-commit-windows` 文件中的第一行代码中的`D:/Git`为自己本机电脑的 `Git` 安装目录，即第一行代码为声明 `sh.exe` 的目录
   2.1.2 执行 `gradle installGitHooks`
 
 Mac OS/Linux:  `./gradlew installGitHooks`<br>
 
 或者在 `Android Studio` 中右边面板上找到 `root-Tasks-other-installGitHooks` 并双击执行
 
-2.2 赋予执行脚本可执行权限 `chmod +x .git/hooks/post-commit`<br>
+2.2 赋予执行脚本可执行权限 `chmod +x .git/hooks/pre-commit`<br>
 
 ### 环境准备
 
@@ -122,13 +122,13 @@ eg
 
 #### 大概原理
 
-i. 在项目中应用 gradle plugin，在每次 git commit 后，在 `.git/hooks` 中的 `post-commit` hook 会自动执行，会到项目根目录下执行 `./gradlew lintCheck -PisLintCheck`
+i. 在项目中应用 gradle plugin，在每次 git commit 后，在 `.git/hooks` 中的 `pre-commit` hook 会自动执行，会到项目根目录下执行 `./gradlew lintCheck -PisLintCheck`
 
-ii. lintCheck 会通过 `git diff` 获取本次提交和上一次提交之间的代码差异，并记录其行数和文件名
+ii. lintCheck 会通过 `git diff` 获取暂存区中的代码修改，并记录其行数和文件名
 
 iii. 将所有的改动的文件进行 lint 操作，并记录其 issue，如果某个 issue 对应的代码行正好是改动的代码行，则将记录数(记为 K)加一
 
-iiii. 当结束 lintCheck 后，如果 K > 0 ，则将代码回滚(`git reset HEAD~1`)，即将该 commit 撤销
+iiii. 当结束 lintCheck 后，如果 K > 0 ，则抛出异常，使本次提交失败
 
 PS. 如果该 `Issue` 是 `Warning` 级别的，Android Studio 不会进行提示，如果该 `Issue` 是 `Error` 级别的，Android Studio 会有错误提示弹窗
 
@@ -158,7 +158,7 @@ PS. 如果该 `Issue` 是 `Warning` 级别的，Android Studio 不会进行提�
     }
     ```
 
-3. 复制 `post-commit` 脚本到本地的 `.git/hooks` 目录下
+3. 复制 `pre-commit` 脚本到本地的 `.git/hooks` 目录下
 
     在根目录下执行执行  
     > Mac/Linux: `./gradlew installGitHooks`<br>
@@ -167,11 +167,14 @@ PS. 如果该 `Issue` 是 `Warning` 级别的，Android Studio 不会进行提�
     或者在 `Android Studio` 中右边面板上找到 `root-Tasks-other-installGitHooks` 并双击执行
 
 
-PS. 如果无法执行 `post-commit` 脚本，可能是权限问题，给该脚本加上可执行权限
+PS. 如果无法执行 `pre-commit` 脚本，可能是权限问题，给该脚本加上可执行权限
 
-`chmod +x .git/hooks/post-commit`
+`chmod +x .git/hooks/pre-commit`
 
-PSS. 如果要强制关闭在 commit 之后的 hook 操作，可以使用 `deleteGitHooks` task 将 `.git/hooks/post-commit` 文件删除
+PSS. 强制关闭 hook 操作
+    
+    * 如果要强制关闭在 commit 之后的 hook 操作，可以使用 `deleteGitHooks` task 将 `.git/hooks/pre-commit` 文件删除
+    * 或者在 commit 时候加上 ` --no-verify` 参数
 
 
 
