@@ -119,13 +119,7 @@ class LintPlugin implements Plugin<Project> {
          */
         project.task("installGitHooks").doLast {
             println("OS Type:" + System.getProperty("os.name"))
-            File postCommit
-            String OSType = System.getProperty("os.name")
-            if (OSType.contains("Windows")) {
-                postCommit = new File(project.rootDir, "pre-commit-windows")
-            } else {
-                postCommit = new File(project.rootDir, "pre-commit")
-            }
+            File postCommit = new File(project.rootDir, "pre-commit")
 
             project.copy {
                 from (postCommit) {
