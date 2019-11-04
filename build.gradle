@@ -33,7 +33,7 @@ apply plugin: "me.ppting.plugin.lint"
 
 lintConfig {
     //配置Lint检查文件的类型
-    lintCheckFileType = ".java,.xml"
+    lintCheckFileType = ".java,.xml,.kt"
     //是否将检查文件的所有扫描结果都输出
     lintReportAll = true
 }
